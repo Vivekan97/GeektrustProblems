@@ -51,7 +51,7 @@ class CourseManagement(CourseManagementBase):
         # added new result variable
         result = ""
         if len(allotting_inputs) != helpers.ALLOTTING_INPUT_COUNT:
-            print(helpers.INPUT_ERROR_MESSAGE)
+            return helpers.INPUT_ERROR_MESSAGE
         if len(allotting_inputs) == helpers.ALLOTTING_INPUT_COUNT:
             for message in self.scheduler.course_allotment(allotting_inputs[1]):
                 result += message + "\n"
