@@ -18,6 +18,12 @@ class MyTestCase(unittest.TestCase):
         # print(self.ride_sharing.match("R1"))
         self.assertEqual(self.ride_sharing.match("R1"), "DRIVERS_MATCHED D1 D3")
 
+    def test_start_ride(self):
+        self.assertEqual(self.ride_sharing.start_ride("RIDE-001", 2, "R1"), "RIDE_STARTED RIDE-001")
+
+    def test_stop_ride(self):
+        self.assertEqual(self.ride_sharing.stop_ride("RIDE-001", 4, 5, 32), "RIDE_STOPPED RIDE-001")
+
 
 class SecondTastCase(unittest.TestCase):
 
@@ -36,6 +42,14 @@ class SecondTastCase(unittest.TestCase):
         self.assertEqual(self.ride_sharing.match("R1"), "DRIVERS_MATCHED D2 D3 D1")
         self.assertEqual(self.ride_sharing.match("R2"), "DRIVERS_MATCHED D1 D2 D3")
 
+    def test_start_ride(self):
+        self.assertEqual(self.ride_sharing.start_ride("RIDE-101", 1, "R1"), "RIDE_STARTED RIDE-101")
+        self.assertEqual(self.ride_sharing.start_ride("RIDE-102", 1, "R2"), "RIDE_STARTED RIDE-102")
+
+    def test_stop_ride(self):
+        self.assertEqual(self.ride_sharing.stop_ride("RIDE-101", 10, 2, 48), "RIDE_STOPPED RIDE-101")
+        self.assertEqual(self.ride_sharing.stop_ride("RIDE-102", 7, 9, 50), "RIDE_STOPPED RIDE-102")
+
 
 class ThirdTestCase(unittest.TestCase):
 
@@ -49,6 +63,10 @@ class ThirdTestCase(unittest.TestCase):
         self.third_rider.add_rider("R2", 1, 1)
         self.assertEqual(self.third_rider.match("R1"), "DRIVERS_MATCHED D2 D3 D1")
         self.assertEqual(self.third_rider.match("R2"), "DRIVERS_MATCHED D1 D2 D3")
+        self.assertEqual(self.third_rider.start_ride("RIDE-101", 1, "R1"), "RIDE_STARTED RIDE-101")
+        self.assertEqual(self.third_rider.start_ride("RIDE-102", 1, "R2"), "RIDE_STARTED RIDE-102")
+        self.assertEqual(self.third_rider.stop_ride("RIDE-101", 10, 2, 48), "RIDE_STOPPED RIDE-101")
+        self.assertEqual(self.third_rider.stop_ride("RIDE-102", 7, 9, 50), "RIDE_STOPPED RIDE-102")
 
 
 if __name__ == '__main__':
