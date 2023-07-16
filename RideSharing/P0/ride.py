@@ -17,3 +17,9 @@ class Ride:
         self.ride_x_location = x_position
         self.ride_y_location = y_position
         self.time_taken = time_taken
+
+    def get_ride_current_position(self):
+        return self.ride_x_location, self.ride_y_location
+
+    def get_time_taken(self):
+        return self.time_taken

@@ -25,6 +25,9 @@ class User(IdGenerator):
     def get_user_id(self):
         return self.__id
 
+    def get_current_position(self):
+        return self.x_position, self.y_position
+
 
 class Driver(User):
 
