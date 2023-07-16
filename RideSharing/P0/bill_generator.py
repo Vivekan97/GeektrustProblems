@@ -1,6 +1,7 @@
 from ride import Ride
 from driver import Driver
 from distance_calculator import DistanceCalculator
+from location import Location
 
 
 class BillGenerator:
@@ -15,5 +16,13 @@ class BillGenerator:
         self.assigned_driver: Driver = driver
 
     def generate_bill(self):
-        # starting_point = self.assigned_driver.
-        pass
+        driver_x, driver_y = self.assigned_driver.get_current_position()
+        ride_x, ride_y = self.ride_for_billing.get_ride_current_position()
+        driver_location = Location(driver_x, driver_y)
+        ride_location = Location(ride_x, ride_y)
+        rode_distance = DistanceCalculator(driver_location, ride_location).euclidean_distance()
+        kilometer_charge = round(rode_distance, 2) * self.charge_per_kilometer
+        time_charge = self.ride_for_billing.get_time_taken() * self.charge_per_minute
+        raw_amount = self.base_fare + kilometer_charge + time_charge
+        value = round(raw_amount, 2) * self.service_tax
+        return round(value, 2)

@@ -1,10 +1,11 @@
 from ride_sharing_model import RideSharingBase
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Set
 from location import Location
 from driver import Driver, Rider, IdGenerator
 import helpers
 from distance_calculator import DistanceCalculator
 from ride import Ride
+from bill_generator import BillGenerator
 
 
 class RideSharing(RideSharingBase):
@@ -13,7 +14,7 @@ class RideSharing(RideSharingBase):
         self.driver_and_location: Dict[int, Tuple[Driver, Location]] = {}
         self.rider_and_location: Dict[int, Tuple[Rider, Location]] = {}
         self.rides: Dict[str, Tuple[Ride, Driver]] = {}
-        self.started_rides = set()
+        self.started_rides: Set[str] = set()
 
     def add_driver(self, driver_id: str, x_coordinate: int, y_coordinate: int):
         new_location = Location(x_coordinate, y_coordinate)
@@ -96,4 +97,13 @@ class RideSharing(RideSharingBase):
         return helpers.INVALID_RIDE
 
     def bill(self, ride_id: str):
-        pass
+        if ride_id not in self.started_rides:
+            current_ride_and_driver = self.rides.pop(ride_id)
+            current_ride = current_ride_and_driver[0]
+            current_driver = current_ride_and_driver[1]
+            # if ride is active then bill should not be generated
+            if current_ride.get_ride_status():
+                return helpers.RIDE_NOT_COMPLETED
+            new_bill = BillGenerator(current_ride, current_driver)
+            return f"BILL {ride_id} {current_driver.get_user_id()} {new_bill.generate_bill()}"
+        return helpers.INVALID_RIDE
