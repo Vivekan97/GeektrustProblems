@@ -18,11 +18,11 @@ class RideSharingBase(ABC):
     @abstractmethod
     def start_ride(self, ride_id: str, nth_driver: int, rider_id: str):
         pass
-    #
-    # @abstractmethod
-    # def stop_ride(self):
-    #     pass
-    #
-    # @abstractmethod
-    # def bill(self):
-    #     pass
+
+    @abstractmethod
+    def stop_ride(self, ride_id: str, destination_x: int, destination_y: int, time_taken_in_min: int):
+        pass
+
+    @abstractmethod
+    def bill(self, ride_id: str):
+        pass
