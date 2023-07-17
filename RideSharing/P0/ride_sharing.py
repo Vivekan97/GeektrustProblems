@@ -28,7 +28,7 @@ class RideSharing(RideSharingBase):
 
     def get_matching_drivers(self, rider_location: Location):
         available_drivers_and_location = []
-        for count, driver_with_location in enumerate(self.driver_and_location.values()):
+        for count, driver_with_location in enumerate(self.driver_and_location.values(), start=1):
             # stop looping if number of drivers more than 5
             if count == 5:
                 break
@@ -38,12 +38,14 @@ class RideSharing(RideSharingBase):
             if temp.euclidean_distance() <= 5:
                 available_drivers_and_location.append((driver, temp.euclidean_distance()))
         # sort by lexicographical orders
-        sorted_drivers_and_location = sorted(available_drivers_and_location, key=lambda a: (a[1], a[0]))
+        sorted_drivers_and_location = sorted(available_drivers_and_location,
+                                             key=lambda driver_and_location: (driver_and_location[1],
+                                                                              driver_and_location[0].get_user_id()))
         return [a[0].get_user_id() for a in sorted_drivers_and_location]
 
     def match(self, rider_id: str):
         new_rider = IdGenerator(rider_id)
-        print(self.rider_and_location.items())
+        # print(self.rider_and_location.items())
         current_rider = self.rider_and_location.get(new_rider.get_secret_id(), None)
         if not current_rider:
             return None
@@ -59,6 +61,27 @@ class RideSharing(RideSharingBase):
             return None
         return current_driver_and_location[1]
 
+    def assign_ride(self, ride_id: str, driver_id: str, rider_id: str):
+        rider_key = IdGenerator(rider_id).get_secret_id()
+        rider_and_location = self.rider_and_location.get(rider_key)
+        rider = rider_and_location[0]
+        new_ride = Ride(ride_id, rider)
+        self.started_rides.add(ride_id)
+        new_ride.set_ride_status(True)
+        driver_id = IdGenerator(driver_id).get_secret_id()
+        assigned_driver = self.driver_and_location.pop(driver_id)[0]
+        self.rides[ride_id] = new_ride, assigned_driver
+        return ride_id
+
+    def cleanup_ride(self, ride_id: str, ride: Ride, driver: Driver, destination_x: int,
+                     destination_y: int, time_taken_in_min: int):
+        self.started_rides.remove(ride_id)
+        ride.set_ride_status(False)
+        ride.update_ride(destination_x, destination_y, time_taken_in_min)
+        driver.change_driver_status(False)
+        self.rides[ride_id] = ride, driver
+        return ride_id
+
     def start_ride(self, ride_id: str, nth_driver: int, rider_id: str):
         rider_location = self.get_a_rider_location(rider_id)
         available_drivers = self.get_matching_drivers(rider_location)
@@ -68,15 +91,19 @@ class RideSharing(RideSharingBase):
         # ride id already exists
         if ride_id in self.started_rides:
             return helpers.INVALID_RIDE
-        new_ride = Ride(ride_id)
-        self.started_rides.add(ride_id)
-        new_ride.set_ride_status(True)
-        driver_id = IdGenerator(available_drivers[nth_driver-1]).get_secret_id()
-        assigned_driver = self.driver_and_location.pop(driver_id)[0]
-        self.rides[ride_id] = new_ride, assigned_driver
-        return helpers.RIDE_STARTED + f" {ride_id}"
+        # self.assign_ride(ride_id, available_drivers[nth_driver-1])
+        # new_ride = Ride(ride_id)
+        # self.started_rides.add(ride_id)
+        # new_ride.set_ride_status(True)
+        # driver_id = IdGenerator(available_drivers[nth_driver-1]).get_secret_id()
+        # assigned_driver = self.driver_and_location.pop(driver_id)[0]
+        # self.rides[ride_id] = new_ride, assigned_driver
+        # return helpers.RIDE_STARTED + f" {ride_id}"
+        return helpers.RIDE_STARTED + f" {self.assign_ride(ride_id, available_drivers[nth_driver-1], rider_id)}"
 
     def stop_ride(self, ride_id: str, destination_x: int, destination_y: int, time_taken_in_min: int):
+        if time_taken_in_min < 0:
+            return helpers.INVALID_RIDE
         if ride_id in self.started_rides:
             # fetching current ride
             current_ride_and_driver = self.rides.get(ride_id, None)
@@ -88,19 +115,23 @@ class RideSharing(RideSharingBase):
             current_driver = current_ride_and_driver[1]
             if not current_ride.get_ride_status():
                 return helpers.INVALID_RIDE
-            self.started_rides.remove(ride_id)
-            current_ride.set_ride_status(False)
-            current_ride.update_ride(destination_x, destination_y, time_taken_in_min)
-            current_driver.change_driver_status(False)
-            self.rides[ride_id] = current_ride, current_driver
-            return helpers.RIDE_STOPPED + f" {ride_id}"
+            # self.started_rides.remove(ride_id)
+            # current_ride.set_ride_status(False)
+            # current_ride.update_ride(destination_x, destination_y, time_taken_in_min)
+            # current_driver.change_driver_status(False)
+            # self.rides[ride_id] = current_ride, current_driver
+            # return helpers.RIDE_STOPPED + f" {ride_id}"
+            return helpers.RIDE_STOPPED + f" {self.cleanup_ride(ride_id, current_ride, current_driver, destination_x, destination_y, time_taken_in_min)}"
         return helpers.INVALID_RIDE
 
     def bill(self, ride_id: str):
         if ride_id not in self.started_rides:
+            if ride_id not in self.rides:
+                return helpers.INVALID_RIDE
             current_ride_and_driver = self.rides.pop(ride_id)
             current_ride = current_ride_and_driver[0]
             current_driver = current_ride_and_driver[1]
+            # current_rider =
             # if ride is active then bill should not be generated
             if current_ride.get_ride_status():
                 return helpers.RIDE_NOT_COMPLETED

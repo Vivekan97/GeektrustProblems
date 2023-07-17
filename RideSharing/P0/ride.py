@@ -1,11 +1,16 @@
+from driver import Rider
+
+
 class Ride:
 
-    def __init__(self, ride_id: str):
+    def __init__(self, ride_id: str, rider: Rider, status: bool = False, x_pos: int = 0,
+                 y_pos: int = 0, time_for_ride: int = 0):
         self.__id: str = ride_id
-        self._active: bool = False
-        self.ride_x_location: int = 0
-        self.ride_y_location: int = 0
-        self.time_taken: int = 0
+        self._active: bool = status
+        self.ride_x_location: int = x_pos
+        self.ride_y_location: int = y_pos
+        self.time_taken: int = time_for_ride
+        self.rider = rider
 
     def get_ride_status(self):
         return self._active

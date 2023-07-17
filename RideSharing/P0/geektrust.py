@@ -1,3 +1,5 @@
+from ride_management import RideManagement
+
 
 def main():
 
@@ -7,6 +9,7 @@ def main():
     with open(input_file, helpers.INPUT_FILE_MODE) as f:
         contents = f.read().split("\n")
         user_inputs = [content.split(" ") for content in contents]
+        RideManagement(user_inputs).ride_management()
 
 
 if __name__ == "__main__":
